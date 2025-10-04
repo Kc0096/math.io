@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Physics Tools - Math-Physics Suite{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-atom me-2"></i>Physics Calculators</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="physicsForm">
+                    <div class="mb-3">
+                        <label for="calc_type" class="form-label">Select Calculation Type:</label>
+                        <select class="form-select" id="calc_type" name="calc_type" onchange="showInputs()" required>
+                            <option value="">-- Choose a calculation --</option>
+                            <option value="force" {{ 'selected' if results.type == 'force' }}>Force (F = ma)</option>
+                            <option value="wave" {{ 'selected' if results.type == 'wave' }}>Wave Speed</option>
+                            <option value="ohm" {{ 'selected' if results.type == 'ohm' }}>Ohm's Law</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Force Calculation -->
+                    <div id="forceInputs" class="calculation-inputs" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">Mass (kg):</label>
+                            <input type="number" class="form-control" name="mass" step="any" 
+                                   placeholder="Enter mass in kilograms"
+                                   value="{{ results.mass if results.type == 'force' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Acceleration (m/s²):</label>
+                            <input type="number" class="form-control" name="acceleration" step="any" 
+                                   placeholder="Enter acceleration in m/s²"
+                                   value="{{ results.acceleration if results.type == 'force' }}">
+                        </div>
+                    </div>
+                    
+                    <!-- Wave Speed Calculation -->
+                    <div id="waveInputs" class="calculation-inputs" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">Tension (N):</label>
+                            <input type="number" class="form-control" name="tension" step="any" 
+                                   placeholder="Enter tension in Newtons"
+                                   value="{{ results.tension if results.type == 'wave' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Linear Density (kg/m):</label>
+                            <input type="number" class="form-control" name="density" step="any" 
+                                   placeholder="Enter linear density in kg/m"
+                                   value="{{ results.density if results.type == 'wave' }}">
+                        </div>
+                    </div>
+                    
+                    <!-- Ohm's Law Calculation -->
+                    <div id="ohmInputs" class="calculation-inputs" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">Voltage (V):</label>
+                            <input type="number" class="form-control" name="voltage" step="any" 
+                                   placeholder="Enter voltage in volts"
+                                   value="{{ results.voltage if results.type == 'ohm' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Resistance (Ω):</label>
+                            <input type="number" class="form-control" name="resistance" step="any" 
+                                   placeholder="Enter resistance in ohms"
+                                   value="{{ results.resistance if results.type == 'ohm' }}">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" id="calculateBtn" style="display: none;">
+                        <i class="fas fa-calculator me-2"></i>Calculate
+                    </button>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home me-2"></i>Back to Dashboard
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-book me-2"></i>Physics Formulas</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <strong>Newton's Second Law:</strong><br>
+                            <span class="text-muted">F = ma</span><br>
+                            <small>Force equals mass times acceleration</small>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Wave Speed on String:</strong><br>
+                            <span class="text-muted">v = √(T/μ)</span><br>
+                            <small>Speed equals square root of tension over linear density</small>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Ohm's Law:</strong><br>
+                            <span class="text-muted">V = IR, P = VI</span><br>
+                            <small>Voltage equals current times resistance</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        {% if results %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-check-circle me-2 text-success"></i>Calculation Results</h5>
+            </div>
+            <div class="card-body">
+                {% if results.type == 'force' %}
+                <div class="text-center mb-4">
+                    <h3 class="text-primary">Newton's Second Law</h3>
+                    <p class="lead">F = ma</p>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="math-result text-center">
+                            <h6>Mass</h6>
+                            <div class="fs-4">{{ "%.2f"|format(results.mass) }}</div>
+                            <small class="text-muted">kg</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="math-result text-center">
+                            <h6>Acceleration</h6>
+                            <div class="fs-4">{{ "%.2f"|format(results.acceleration) }}</div>
+                            <small class="text-muted">m/s²</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="math-result text-center bg-primary text-white">
+                            <h6>Force</h6>
+                            <div class="fs-4">{{ "%.2f"|format(results.force) }}</div>
+                            <small>N</small>
+                        </div>
+                    </div>
+                </div>
+                
+                {% elif results.type == 'wave' %}
+                <div class="text-center mb-4">
+                    <h3 class="text-success">Wave Speed</h3>
+                    <p class="lead">v = √(T/μ)</p>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="math-result text-center">
+                            <h6>Tension</h6>
+                            <div class="fs-4">{{ "%.2f"|format(results.tension) }}</div>
+                            <small class="text-muted">N</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="math-result text-center">
+                            <h6>Linear Density</h6>
+                            <div class="fs-4">{{ "%.4f"|format(results.density) }}</div>
+                            <small class="text-muted">kg/m</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="math-result text-center bg-success text-white">
+                            <h6>Wave Speed</h6>
+                            <div class="fs-4">{{ "%.2f"|format(results.wave_speed) }}</div>
+                            <small>m/s</small>
+                        </div>
+                    </div>
+                </div>
+                
+                {% elif results.type == 'ohm' %}
+                <div class="text-center mb-4">
+                    <h3 class="text-warning">Ohm's Law</h3>
+                    <p class="lead">V = IR</p>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="math-result text-center">
+                            <h6>Voltage</h6>
+                            <div class="fs-5">{{ "%.2f"|format(results.voltage) }}</div>
+                            <small class="text-muted">V</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="math-result text-center">
+                            <h6>Resistance</h6>
+                            <div class="fs-5">{{ "%.2f"|format(results.resistance) }}</div>
+                            <small class="text-muted">Ω</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="math-result text-center bg-warning">
+                            <h6>Current</h6>
+                            <div class="fs-5">{{ "%.3f"|format(results.current) }}</div>
+                            <small>A</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="math-result text-center bg-info text-white">
+                            <h6>Power</h6>
+                            <div class="fs-5">{{ "%.2f"|format(results.power) }}</div>
+                            <small>W</small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="py-5">
+                    <i class="fas fa-atom fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Select a calculation type</h5>
+                    <p class="text-muted">Choose a physics calculation from the dropdown to get started.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Physics Constants</h6>
+            </div>
+            <div class="card-body">
+                <div class="row small">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><strong>g:</strong> 9.81 m/s² (gravity)</li>
+                            <li><strong>c:</strong> 3×10⁸ m/s (light speed)</li>
+                            <li><strong>e:</strong> 1.6×10⁻¹⁹ C (electron charge)</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><strong>h:</strong> 6.63×10⁻³⁴ J·s (Planck)</li>
+                            <li><strong>k:</strong> 1.38×10⁻²³ J/K (Boltzmann)</li>
+                            <li><strong>R:</strong> 8.31 J/(mol·K) (gas)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showInputs() {
+    const calcType = document.getElementById('calc_type').value;
+    const allInputs = document.querySelectorAll('.calculation-inputs');
+    const calculateBtn = document.getElementById('calculateBtn');
+    
+    // Hide all input sections
+    allInputs.forEach(input => {
+        input.style.display = 'none';
+    });
+    
+    // Show relevant input section
+    if (calcType) {
+        document.getElementById(calcType + 'Inputs').style.display = 'block';
+        calculateBtn.style.display = 'inline-block';
+    } else {
+        calculateBtn.style.display = 'none';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    {% if results %}
+    showInputs();
+    {% endif %}
+});
+</script>
+{% endblock %}

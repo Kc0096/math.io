@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Statistics & Data Analysis - Math-Physics Suite{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Data Input</h5>
+            </div>
+            <div class="card-body">
+                <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                    <button class="nav-link active" id="nav-csv-tab" data-bs-toggle="tab" data-bs-target="#nav-csv" 
+                            type="button" role="tab">
+                        <i class="fas fa-file-csv me-1"></i>CSV Upload
+                    </button>
+                    <button class="nav-link" id="nav-manual-tab" data-bs-toggle="tab" data-bs-target="#nav-manual" 
+                            type="button" role="tab">
+                        <i class="fas fa-keyboard me-1"></i>Manual Entry
+                    </button>
+                </div>
+                
+                <div class="tab-content mt-3" id="nav-tabContent">
+                    <!-- CSV Upload Tab -->
+                    <div class="tab-pane fade show active" id="nav-csv" role="tabpanel">
+                        <form method="POST" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="csv_file" class="form-label">Upload CSV File:</label>
+                                <input type="file" class="form-control" id="csv_file" name="csv_file" 
+                                       accept=".csv" required>
+                                <div class="form-text">
+                                    Upload a CSV file with numeric data. First numeric column will be analyzed.
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-2"></i>Analyze CSV
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Manual Entry Tab -->
+                    <div class="tab-pane fade" id="nav-manual" role="tabpanel">
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label for="manual_data" class="form-label">Enter Data (comma-separated):</label>
+                                <textarea class="form-control" id="manual_data" name="manual_data" rows="4" 
+                                          placeholder="e.g., 12, 15, 18, 20, 22, 25, 30, 35, 40, 45" required></textarea>
+                                <div class="form-text">
+                                    Enter numeric values separated by commas.
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-calculator me-2"></i>Analyze Data
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Statistical Measures</h6>
+            </div>
+            <div class="card-body">
+                <div class="row small">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><strong>Mean:</strong> Average value</li>
+                            <li><strong>Median:</strong> Middle value</li>
+                            <li><strong>Mode:</strong> Most frequent value</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><strong>Variance:</strong> Spread measure</li>
+                            <li><strong>Std Dev:</strong> Square root of variance</li>
+                            <li><strong>Range:</strong> Max - Min</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if stats %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>Statistics Summary</h6>
+            </div>
+            <div class="card-body">
+                <h6 class="mb-3">Dataset: {{ column_name }}</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="math-result mb-2">
+                            <strong>Count:</strong> {{ stats.count }}
+                        </div>
+                        <div class="math-result mb-2">
+                            <strong>Mean:</strong> {{ "%.4f"|format(stats.mean) }}
+                        </div>
+                        <div class="math-result mb-2">
+                            <strong>Median:</strong> {{ "%.4f"|format(stats.median) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="math-result mb-2">
+                            <strong>Std Deviation:</strong> {{ "%.4f"|format(stats.std) }}
+                        </div>
+                        <div class="math-result mb-2">
+                            <strong>Variance:</strong> {{ "%.4f"|format(stats.var) }}
+                        </div>
+                        <div class="math-result mb-2">
+                            <strong>Range:</strong> {{ "%.4f"|format(stats.max - stats.min) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <div class="math-result">
+                            <strong>Minimum:</strong> {{ "%.4f"|format(stats.min) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="math-result">
+                            <strong>Maximum:</strong> {{ "%.4f"|format(stats.max) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-6">
+        {% if plot_url %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-area me-2"></i>
+                    Data Visualizations
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid" alt="Statistical plots">
+                <div class="mt-3">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="alert alert-info">
+                                <strong>Histogram</strong><br>
+                                <small>Shows frequency distribution of your data</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-success">
+                                <strong>Box Plot</strong><br>
+                                <small>Shows quartiles, median, and outliers</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="py-5">
+                    <i class="fas fa-chart-bar fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Upload data to see visualizations</h5>
+                    <p class="text-muted">Provide a CSV file or enter data manually to generate statistical plots.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-download me-2"></i>Sample CSV Format</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">Your CSV should look like this:</p>
+                <pre class="bg-light p-2 rounded small">
+Name,Age,Score,Salary
+Alice,25,85,50000
+Bob,30,92,60000
+Charlie,28,78,55000
+Diana,35,96,70000
+Eve,22,88,45000</pre>
+                <small class="text-muted">The first numeric column (Age, Score, or Salary) will be analyzed.</small>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Interpretation Guide</h6>
+            </div>
+            <div class="card-body small">
+                <div class="mb-2">
+                    <strong>Mean vs Median:</strong> If mean > median, data is right-skewed. If mean < median, data is left-skewed.
+                </div>
+                <div class="mb-2">
+                    <strong>Standard Deviation:</strong> Smaller values indicate data points are close to the mean.
+                </div>
+                <div class="mb-2">
+                    <strong>Box Plot:</strong> The box shows 25th-75th percentiles, line shows median, whiskers show range.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

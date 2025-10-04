@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Algebra Solver - Math-Physics Suite{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-x me-2"></i>Equation Solver</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="equation" class="form-label">Enter equation (set equal to 0):</label>
+                        <input type="text" class="form-control" id="equation" name="equation" 
+                               placeholder="e.g., x**2 - 4*x + 3, 2*x + 5, sin(x) - 0.5"
+                               value="{{ equation if equation }}" required>
+                        <div class="form-text">
+                            Use ** for exponents, * for multiplication. Examples: x**2, 2*x, sin(x), cos(x), log(x)
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="variable" class="form-label">Variable to solve for:</label>
+                        <input type="text" class="form-control" id="variable" name="variable" 
+                               value="{{ variable if variable else 'x' }}" maxlength="1">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-calculator me-2"></i>Solve Equation
+                    </button>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home me-2"></i>Back to Dashboard
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Examples</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <p><strong>Linear:</strong> <code>2*x - 6</code></p>
+                        <p><strong>Quadratic:</strong> <code>x**2 - 5*x + 6</code></p>
+                        <p><strong>Cubic:</strong> <code>x**3 - 3*x**2 + 2*x</code></p>
+                        <p><strong>Trigonometric:</strong> <code>sin(x) - 0.5</code></p>
+                        <p><strong>Exponential:</strong> <code>exp(x) - 3</code></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        {% if solutions is defined %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-check-circle me-2 text-success"></i>Solutions</h5>
+            </div>
+            <div class="card-body">
+                {% if solutions %}
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-trophy me-2"></i>Found {{ solutions|length }} solution(s):</h6>
+                        {% for solution in solutions %}
+                            <div class="math-result">
+                                <strong>Solution {{ loop.index }}:</strong> 
+                                {{ variable }} = {{ solution }}
+                                {% if solution.is_real %}
+                                    <span class="badge bg-success ms-2">Real</span>
+                                {% else %}
+                                    <span class="badge bg-warning ms-2">Complex</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        No real solutions found for this equation.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-list me-2"></i>Step-by-Step Solution</h6>
+            </div>
+            <div class="card-body">
+                {% for step in steps %}
+                    <div class="mb-2 p-2 bg-light rounded">
+                        <strong>Step {{ loop.index }}:</strong> {{ step }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Trigonometry Visualizer - Math-Physics Suite{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-wave-square me-2"></i>Function Plotter</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="function" class="form-label">Select Trigonometric Function:</label>
+                        <select class="form-select" id="function" name="function" required>
+                            <option value="sin" {{ 'selected' if function == 'sin' }}>sin(x)</option>
+                            <option value="cos" {{ 'selected' if function == 'cos' }}>cos(x)</option>
+                            <option value="tan" {{ 'selected' if function == 'tan' }}>tan(x)</option>
+                            <option value="sec" {{ 'selected' if function == 'sec' }}>sec(x)</option>
+                            <option value="csc" {{ 'selected' if function == 'csc' }}>csc(x)</option>
+                            <option value="cot" {{ 'selected' if function == 'cot' }}>cot(x)</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-chart-line me-2"></i>Plot Function
+                    </button>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home me-2"></i>Back to Dashboard
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Function Properties</h6>
+            </div>
+            <div class="card-body">
+                <div id="functionInfo">
+                    <div class="mb-2">
+                        <strong>Domain:</strong> <span id="domain">All real numbers</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Range:</strong> <span id="range">[-1, 1]</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Period:</strong> <span id="period">2π</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Symmetry:</strong> <span id="symmetry">Odd function</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-table me-2"></i>Key Values</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Angle</th>
+                                <th>Radians</th>
+                                <th id="funcHeader">sin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="keyValues">
+                            <tr><td>0°</td><td>0</td><td id="val0">0</td></tr>
+                            <tr><td>30°</td><td>π/6</td><td id="val30">1/2</td></tr>
+                            <tr><td>45°</td><td>π/4</td><td id="val45">√2/2</td></tr>
+                            <tr><td>60°</td><td>π/3</td><td id="val60">√3/2</td></tr>
+                            <tr><td>90°</td><td>π/2</td><td id="val90">1</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        {% if plot_url %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Graph: {{ function }}(x)
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid" alt="Trigonometric function plot">
+                <div class="mt-3">
+                    <p class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Graph shows {{ function }}(x) from -2π to 2π radians
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="py-5">
+                    <i class="fas fa-chart-line fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Select a function to see its graph</h5>
+                    <p class="text-muted">Choose a trigonometric function from the left panel to visualize it.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+const functionData = {
+    'sin': {
+        domain: 'All real numbers',
+        range: '[-1, 1]',
+        period: '2π',
+        symmetry: 'Odd function',
+        values: {'val0': '0', 'val30': '1/2', 'val45': '√2/2', 'val60': '√3/2', 'val90': '1'}
+    },
+    'cos': {
+        domain: 'All real numbers',
+        range: '[-1, 1]',
+        period: '2π',
+        symmetry: 'Even function',
+        values: {'val0': '1', 'val30': '√3/2', 'val45': '√2/2', 'val60': '1/2', 'val90': '0'}
+    },
+    'tan': {
+        domain: 'x ≠ π/2 + nπ',
+        range: 'All real numbers',
+        period: 'π',
+        symmetry: 'Odd function',
+        values: {'val0': '0', 'val30': '√3/3', 'val45': '1', 'val60': '√3', 'val90': 'undefined'}
+    },
+    'sec': {
+        domain: 'x ≠ π/2 + nπ',
+        range: '(-∞, -1] ∪ [1, ∞)',
+        period: '2π',
+        symmetry: 'Even function',
+        values: {'val0': '1', 'val30': '2√3/3', 'val45': '√2', 'val60': '2', 'val90': 'undefined'}
+    },
+    'csc': {
+        domain: 'x ≠ nπ',
+        range: '(-∞, -1] ∪ [1, ∞)',
+        period: '2π',
+        symmetry: 'Odd function',
+        values: {'val0': 'undefined', 'val30': '2', 'val45': '√2', 'val60': '2√3/3', 'val90': '1'}
+    },
+    'cot': {
+        domain: 'x ≠ nπ',
+        range: 'All real numbers',
+        period: 'π',
+        symmetry: 'Odd function',
+        values: {'val0': 'undefined', 'val30': '√3', 'val45': '1', 'val60': '√3/3', 'val90': '0'}
+    }
+};
+
+function updateFunctionInfo(func) {
+    const info = functionData[func];
+    document.getElementById('domain').textContent = info.domain;
+    document.getElementById('range').textContent = info.range;
+    document.getElementById('period').textContent = info.period;
+    document.getElementById('symmetry').textContent = info.symmetry;
+    document.getElementById('funcHeader').textContent = func;
+    
+    Object.entries(info.values).forEach(([id, value]) => {
+        document.getElementById(id).textContent = value;
+    });
+}
+
+document.getElementById('function').addEventListener('change', function() {
+    updateFunctionInfo(this.value);
+});
+
+// Initialize with current function
+{% if function %}
+updateFunctionInfo('{{ function }}');
+{% endif %}
+</script>
+{% endblock %}
