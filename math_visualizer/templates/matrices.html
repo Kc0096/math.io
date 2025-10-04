@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Matrix Calculator - Math-Physics Suite{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-th me-2"></i>Matrix Calculator</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="matrixForm">
+                    <div class="mb-3">
+                        <label for="size" class="form-label">Matrix Size:</label>
+                        <select class="form-select" id="size" name="size" onchange="generateMatrix()">
+                            <option value="2" {{ 'selected' if size == 2 }}>2×2</option>
+                            <option value="3" {{ 'selected' if size == 3 }}>3×3</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Enter Matrix Elements:</label>
+                        <div id="matrixInputs">
+                            <!-- Matrix inputs will be generated here -->
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-calculator me-2"></i>Calculate Properties
+                    </button>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home me-2"></i>Back to Dashboard
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Matrix Operations</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success me-2"></i><strong>Determinant:</strong> Scalar value</li>
+                    <li><i class="fas fa-check text-success me-2"></i><strong>Rank:</strong> Linear independence measure</li>
+                    <li><i class="fas fa-check text-success me-2"></i><strong>Inverse:</strong> A⁻¹ (if exists)</li>
+                    <li><i class="fas fa-check text-success me-2"></i><strong>Eigenvalues:</strong> λ values</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        {% if matrix is defined %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Matrix Properties</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <h6>Input Matrix:</h6>
+                        <div class="math-result">
+                            <table class="table table-sm table-bordered text-center">
+                                {% for row in matrix %}
+                                <tr>
+                                    {% for element in row %}
+                                    <td>{{ "%.3f"|format(element) }}</td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="math-result">
+                            <strong>Determinant:</strong><br>
+                            <span class="fs-5">{{ "%.6f"|format(determinant) }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="math-result">
+                            <strong>Rank:</strong><br>
+                            <span class="fs-5">{{ rank }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {% if inverse %}
+                <div class="mt-3">
+                    <h6>Inverse Matrix:</h6>
+                    <div class="math-result">
+                        <table class="table table-sm table-bordered text-center">
+                            {% for row in inverse %}
+                            <tr>
+                                {% for element in row %}
+                                <td>{{ "%.3f"|format(element) }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+                {% else %}
+                <div class="mt-3">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Matrix is not invertible (determinant = 0)
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if eigenvalues %}
+                <div class="mt-3">
+                    <h6>Eigenvalues:</h6>
+                    <div class="math-result">
+                        {% for eigenval in eigenvalues %}
+                            <span class="badge bg-primary me-2">λ{{ loop.index }} = {{ "%.3f"|format(eigenval.real) }}
+                            {% if eigenval.imag != 0 %}
+                                + {{ "%.3f"|format(eigenval.imag) }}i
+                            {% endif %}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function generateMatrix() {
+    const size = document.getElementById('size').value;
+    const container = document.getElementById('matrixInputs');
+    container.innerHTML = '';
+    
+    const table = document.createElement('table');
+    table.className = 'table table-sm';
+    
+    for (let i = 0; i < size; i++) {
+        const row = table.insertRow();
+        for (let j = 0; j < size; j++) {
+            const cell = row.insertCell();
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = 'any';
+            input.name = `matrix_${i}_${j}`;
+            input.className = 'form-control form-control-sm';
+            input.placeholder = `a${i+1}${j+1}`;
+            input.required = true;
+            {% if matrix %}
+                {% for i in range(size|default(2)) %}
+                    {% for j in range(size|default(2)) %}
+                        if (i === {{ i }} && j === {{ j }}) {
+                            input.value = {{ matrix[i][j] }};
+                        }
+                    {% endfor %}
+                {% endfor %}
+            {% endif %}
+            cell.appendChild(input);
+        }
+    }
+    
+    container.appendChild(table);
+}
+
+// Generate initial matrix
+document.addEventListener('DOMContentLoaded', function() {
+    generateMatrix();
+});
+</script>
+{% endblock %}
